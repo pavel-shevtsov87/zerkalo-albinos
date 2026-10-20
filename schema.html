@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурная схема романа "Зеркало-Альбинос"</title>
+    <!-- Подключаем нашу общую базу данных романа -->
+    <script src="data.js"></script>
+    <style>
+        body { 
+            background-color: #0b0b0b; 
+            color: #e5e5e5; 
+            font-family: 'Times New Roman', Times, serif; 
+            padding: 40px 20px; 
+            margin: 0; 
+            line-height: 1.4; 
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 2.2rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: normal; color: #fff; }
+        .subtitle { font-size: 1rem; text-transform: uppercase; color: #888; letter-spacing: 0.15em; margin-bottom: 30px; }
+        .btn-back { background: transparent; border: 1px solid #444; color: #aaa; padding: 10px 25px; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em; text-decoration: none; transition: all 0.3s ease; display: inline-block; }
+        .btn-back:hover { border-color: #eee; color: #eee; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; background-color: #121212; table-layout: fixed; }
+        th, td { border: 1px solid rgba(128, 128, 128, 0.25); padding: 12px; font-size: 0.85rem; vertical-align: top; }
+        
+        .part-header { background-color: #1a1a1a; color: #fff; text-align: center; font-size: 1.2rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.2em; padding: 15px; }
+        .chapter-cell { font-weight: bold; width: 12%; text-align: center; vertical-align: middle; font-size: 1rem; letter-spacing: 0.05em; }
+        
+        .episode-title { background-color: rgba(128, 128, 128, 0.15); text-align: center; padding: 4px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: bold; }
+        .scene-item { font-size: 0.8rem; opacity: 0.8; margin-bottom: 4px; }
+        .scene-item span { opacity: 0.5; }
+        
+        .peak-scene { font-weight: bold; background-color: rgba(255, 255, 255, 0.15); padding: 4px; border: 1px dashed currentColor; }
+        
+        /* Интерактивный клик по ячейкам-эпизодам */
+        .clickable-cell { cursor: pointer; transition: background-color 0.2s ease; }
+        .clickable-cell:hover { background-color: rgba(128, 128, 128, 0.25) !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Схема романа</h1>
+        <div class="subtitle">ЗЕРКАЛО-АЛЬБИНОС</div>
+        <a href="index.html" class="btn-back">← На главную</a>
+    </header>
+
+    <!-- Сама таблица теперь генерируется автоматически через JavaScript -->
+    <table id="dynamicMatrixTable"></table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.getElementById('dynamicMatrixTable');
+        if (!window.bookStructure) return;
+
+        let currentPart = 0;
+
+        window.bookStructure.forEach((section, secIndex) => {
+            // Вывод заголовков больших Частей
+            let needPartHeader = "";
+            if (secIndex === 0 && currentPart === 0) { needPartHeader = "ЧАСТЬ I"; currentPart = 1; }
+            if (secIndex === 4 && currentPart === 1) { needPartHeader = "ЧАСТЬ II"; currentPart = 2; }
+            if (secIndex === 8 && currentPart === 2) { needPartHeader = "ЧАСТЬ III"; currentPart = 3; }
+
+            if (needPartHeader) {
+                const pTr = document.createElement('tr');
+                pTr.innerHTML = `<td colspan="6" class="part-header">${needPartHeader}</td>`;
+                table.appendChild(pTr);
+            }
+
+            const tr = document.createElement('tr');
+
+            // Применение авторского HEX-градиента
+            const bgColor = section.hexColor || "#000000";
+            tr.style.backgroundColor = bgColor;
+            
+            const textColor = section.brightness > 50 ? '#000000' : '#ffffff';
+            tr.style.color = textColor;
+
+            const shortName = section.displayName.replace(/Часть I+ • /, "");
+            let htmlContent = `<td class="chapter-cell">${shortName}</td>`;
+
+            // Обработка Интерлюдий и Коды
+            if (section.type === 'interlude' || section.type === 'coda') {
+                let leftCol = "";
+                let midCol = "";
+                let rightCol = "";
+
+                section.episodes[0].scenes.forEach(sc => {
+                    if (sc.type === 'drawing') leftCol = `<strong>рисунок ${sc.id}</strong>`;
+                    if (sc.type === 'poem') midCol = `<strong>Стихотворение ${sc.id}</strong>`;
+                    if (sc.type === 'track') rightCol = `<span style="float: right;"><strong>трек ${sc.id}</strong></span>`;
+                });
+
+                if (section.type === 'coda') {
+                    htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${leftCol}</td>`;
+                    htmlContent += `<td class="clickable-cell" data-sec="${secIndex}" data-ep="0">${midCol}</td>`;
+                    htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${rightCol}</td>`;
+                } else {
+                    htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${leftCol}</td>`;
+                    htmlContent += `<td colspan="3" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${rightCol}</td>`;
+                }
+            } else {
+                // Генерация 5 стандартных Эпизодов
+                section.episodes.forEach((episode, epIndex) => {
+                    let cellContent = `<td class="clickable-cell" data-sec="${secIndex}" data-ep="${epIndex}">`;
+                    cellContent += `<div class="episode-title">${episode.name}</div>`;
+
+                    episode.scenes.forEach((scene, scIndex) => {
+                        const isPeakTrack = (scene.type === 'track' && scene.id === 33);
+                        const peakClass = isPeakTrack ? ' class="peak-scene"' : '';
+
+                        if (scene.type === 'drawing') {
+                            cellContent += `<div${peakClass}>Узел 1: рисунок ${scene.id}</div>`;
+                        } else if (scene.type === 'track') {
+                            // Заменяем "Сцену" на "Узел"
+                            cellContent += `<div${peakClass}>Узел ${scIndex + 1}: трек ${scene.id}</div>`;
+                        } else if (scene.type === 'poem') {
+                            // Если это пиковая глава — выводим "Поэма", иначе — порядковый номер Рассказа/Стиха по вашей схеме
+                            if (scene.isPeak) {
+                                cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Поэма</div>`;
+                            } else {
+                                cellContent += `<div>Стихотворение ${scene.id}</div>`;
+                            }
+                        } else if (scene.type === 'story') {
+    if (scene.isPeak) {
+        cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Повесть</div>`;
+    } else {
+        // Теперь нумерация рассказов идет строго последовательно, перешагивая пиковую Повесть.
+        // Если индекс в базе больше 5 (так как Повесть заняла место 5-й главы), 
+        // отображаемый номер на схеме будет рассчитываться абсолютно точно по вашей таблице.
+        let displayStoryId = scene.id;
+        if (secIndex === 6) displayStoryId = 5; // Часть II • Глава III -> Рассказ 5
+        if (secIndex === 8) displayStoryId = 6; // Часть III • Глава I -> Рассказ 6
+        if (secIndex === 9) displayStoryId = 7; // Часть III • Глава II -> Рассказ 7
+        if (secIndex === 10) displayStoryId = 8; // Часть III • Глава III -> Рассказ 8
+        
+        cellContent += `<div>Рассказ ${displayStoryId}</div>`;
+    }
+}
+
+                    });
+
+                    cellContent += `</td>`;
+                    htmlContent += cellContent;
+                });
+            }
+
+            tr.innerHTML = htmlContent;
+            table.appendChild(tr);
+        });
+
+        // Кросс-ссылки
+        table.addEventListener('click', (e) => {
+            const cell = e.target.closest('.clickable-cell');
+            if (cell) {
+                const sec = cell.getAttribute('data-sec');
+                const ep = cell.getAttribute('data-ep');
+                window.location.href = `index.html#sec=${sec}&ep=${ep}`;
+            }
+        });
+    });
+
+</script>
+</body>
+</html>
+

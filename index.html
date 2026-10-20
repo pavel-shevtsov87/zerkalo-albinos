@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мультимедийный роман "Зеркало-Альбинос"</title>
+    <script src="data.js" defer></script>
+    <script src="app.js" defer></script>
+    <style>
+        /* Базовые настройки и плавные переходы */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.6s ease, color 0.6s ease, border-color 0.6s ease;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            font-family: 'Times New Roman', Times, serif;
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+
+        :root {
+            --text-color: #000000;
+            --card-bg: rgba(0, 0, 0, 0.05);
+            --border-color: rgba(0, 0, 0, 0.15);
+            --accent-color: #000000;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- СТАРТОВЫЙ ЭКРАН --- */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #ffffff;
+            color: #000000;
+            text-align: center;
+            padding: 20px;
+            letter-spacing: 0.15em;
+        }
+
+        .welcome-screen h2 {
+            font-size: 1.4rem;
+            font-weight: normal;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .welcome-screen h1 {
+            font-size: 2.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .welcome-screen .author {
+            font-size: 1rem;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            color: #555;
+        }
+
+        .btn-enter {
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 12px 35px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            margin-bottom: 40px;
+        }
+
+        .btn-enter:hover { opacity: 0.8; }
+
+        .bottom-nav { display: flex; gap: 20px; }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #000000;
+            border: 1px solid #ccc;
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        /* --- ОСНОВНОЙ ИНТЕРФЕЙС РОМАНА --- */
+        .novel-interface {
+            display: none; /* Включается через JS */
+            grid-template-columns: 300px 1fr;
+            width: 100%;
+            height: 100vh;
+            color: var(--text-color);
+        }
+
+        /* Боковая панель (Навигация по Главам) */
+        .novel-sidebar {
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-title {
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.12em;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            opacity: 0.7;
+        }
+
+        .chapters-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 5px;
+        }
+
+        .btn-chapter {
+            background: transparent;
+            border: 1px solid transparent;
+            color: inherit;
+            padding: 10px 12px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .btn-chapter:hover { background: var(--card-bg); }
+        
+        .btn-chapter.active {
+            border-color: var(--border-color);
+            background: var(--card-bg);
+            font-weight: bold;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: inherit;
+            padding: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            margin-top: 15px;
+            letter-spacing: 0.05em;
+        }
+
+        /* Рабочая область контента */
+        .novel-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Шапка контента */
+        .content-header {
+            padding: 30px 40px 15px 40px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chapter-main-title {
+            font-size: 1.8rem;
+            font-weight: normal;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+        }
+
+        /* Панель переключения Эпизодов (1 - 5) */
+        .episodes-bar {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-episode {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: inherit;
+            padding: 6px 16px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-radius: 20px;
+            font-family: inherit;
+        }
+
+        .btn-episode.active {
+            background: var(--text-color);
+            color: var(--novel-bg, #fff); /* Инверсия цвета кнопки */
+            border-color: var(--text-color);
+        }
+
+        /* Динамическая зона отображения сцен */
+        .display-viewport {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: start;
+        }
+
+        .scene-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Элементы сцен */
+        .audio-track-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .track-meta { font-size: 0.8rem; text-transform: uppercase; opacity: 0.6; margin-bottom: 5px; }
+        .track-name { font-size: 1.2rem; font-weight: bold; margin-bottom: 12px; }
+        .audio-player { width: 100%; }
+
+        .drawing-block {
+            text-align: center;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .image-frame {
+            background: #ffffff;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .image-frame img {
+            max-width: 100%;
+            max-height: 550px;
+            height: auto;
+            display: block;
+        }
+
+        .drawing-caption { margin-top: 15px; font-style: italic; font-size: 1rem; }
+
+        .text-block {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 35px;
+            border-radius: 6px;
+            line-height: 1.7;
+        }
+
+        .text-title { font-size: 1.5rem; margin-bottom: 20px; letter-spacing: 0.05em; }
+        .poetry-layout { white-space: pre-wrap; font-style: italic; font-size: 1.15rem; border-left: 3px solid var(--text-color); padding-left: 20px; }
+        .prose-layout { white-space: pre-wrap; font-size: 1.1rem; text-align: justify; }
+
+        /* Скроллбары */
+        .chapters-list::-webkit-scrollbar, .display-viewport::-webkit-scrollbar { width: 6px; }
+        .chapters-list::-webkit-scrollbar-thumb, .display-viewport::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+             /* --- РЕЖИМ СОЗЕРЦАНИЯ И БЛИЖАЙШЕГО РАССМОТРЕНИЯ --- */
+        
+        .image-frame {
+            background: #ffffff;
+            padding: 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: zoom-in;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .image-frame:hover {
+            transform: scale(1.01);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .contemplation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            overflow: hidden; /* Защита от появления полос прокрутки браузера */
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .contemplation-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Контейнер для изоляции движений мыши при зуме */
+        .contemplation-stage {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 95vw;
+            max-height: 85vh;
+            perspective: 1000px;
+        }
+
+        .contemplation-img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.05);
+            cursor: zoom-in;
+            background: #ffffff;
+            padding: 10px;
+            transform-origin: center center;
+            /* Плавный переход для входа/выхода из зума. При перемещении мыши transition отключается через JS */
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+
+        /* Класс состояния макро-рассмотрения */
+        .contemplation-overlay.zoomed .contemplation-img {
+            cursor: zoom-out;
+            transform: scale(2.5); /* Коэффициент сильного увеличения штриха */
+        }
+
+        .contemplation-caption {
+            margin-top: 25px;
+            color: #888;
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            user-select: none;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Скрываем подпись при детальном рассмотрении, чтобы не мешала */
+        .contemplation-overlay.zoomed .contemplation-caption {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- СТИЛИ ДЛЯ СМАРТФОНОВ И ПЛАНШЕТОВ (МОБИЛЬНАЯ АДАПТАЦИЯ) --- */
+        
+        @media screen and (max-width: 768px) {
+            /* Перестраиваем двухколоночный режим романа в вертикальную ленту */
+            .novel-interface {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            /* Сайдбар превращается в аккуратную верхнюю горизонтальную панель */
+            .novel-sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 12px 15px;
+                height: auto;
+                max-height: 140px;
+                position: relative;
+            }
+
+            .sidebar-title {
+                font-size: 0.75rem;
+                margin-bottom: 8px;
+                text-align: center;
+                padding-left: 0;
+            }
+
+                      /* Список глав теперь можно удобно скроллить пальцем влево-вправо */
+            .chapters-list {
+                display: flex !important; /* Гарантируем строчное расположение кнопок */
+                flex-direction: row !important;
+                overflow-x: auto !important; /* Принудительно включаем горизонтальный скролл */
+                overflow-y: hidden !important;
+                gap: 8px;
+                padding-bottom: 12px;
+                width: 100%;
+                -webkit-overflow-scrolling: touch; /* Плавный инерционный скролл на iPhone/Android */
+            }
+
+            /* Прячем системную полосу прокрутки в мобильной ленте для красоты */
+            .chapters-list::-webkit-scrollbar {
+                display: none;
+                height: 0px;
+                background: transparent;
+            }
+
+
+            .btn-chapter {
+                white-space: nowrap; /* Чтобы названия глав не переносились */
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+
+            .btn-back {
+                margin-top: 5px;
+                padding: 4px;
+                font-size: 0.7rem;
+                width: 100%;
+                text-align: center;
+            }
+
+            /* Рабочая область контента */
+            .novel-content {
+                padding: 15px;
+            }
+
+            .content-header {
+                padding: 10px 0 15px 0;
+            }
+
+            .chapter-main-title {
+                font-size: 1.4rem;
+                text-align: center;
+                margin-bottom: 15px;
+            }
+
+            /* Кнопки Эпизодов центрируются и слегка уменьшаются для пальцев */
+            .episodes-bar {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .btn-episode {
+                padding: 5px 12px;
+                font-size: 0.75rem;
+            }
+
+            /* Перестраиваем сетку контента в один столбец */
+            .chapter-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .media-column, .text-column {
+                gap: 20px;
+            }
+
+            /* Корректируем карточки под мобильные экраны */
+            .text-card, .audio-card, .drawing-card, .text-block {
+                padding: 15px;
+            }
+
+            .track-name {
+                font-size: 1.05rem;
+            }
+
+            /* Оптимизация текста для удобного чтения с телефона */
+            .text-title {
+                font-size: 1.25rem;
+                margin-bottom: 15px;
+            }
+
+            .poetry-layout {
+                font-size: 1rem;
+                padding-left: 12px;
+            }
+
+            .prose-layout {
+                font-size: 0.98rem;
+                line-height: 1.6;
+                text-align: left; /* На телефонах выравнивание по левому краю читается легче */
+            }
+
+            /* Адаптация стартового экрана */
+            .welcome-screen h1 {
+                font-size: 1.7rem;
+            }
+            .welcome-screen h2 {
+                font-size: 1.1rem;
+            }
+            .btn-enter {
+                width: 100%;
+                max-width: 280px;
+                padding: 14px 20px;
+            }
+            .bottom-nav {
+                flex-direction: column;
+                width: 100%;
+                max-width: 280px;
+                gap: 10px;
+            }
+        }
+
+
+        /* --- МИСТИЧЕСКОЕ СВЕЧЕНИЕ КНОПОК ДЛЯ БЕЛОЙ ГЛАВЫ --- */
+        
+        /* Если у документа установлен белый фон романа, добавляем кнопкам эпизодов мягкую ауру */
+        html[style*="--novel-bg: #ffffff"] .btn-episode.active,
+        html[style*="--novel-bg: rgb(255, 255, 255)"] .btn-episode.active {
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.25), 0 0 30px rgba(0, 0, 0, 0.15);
+            border-color: #000000;
+            background-color: #000000;
+            color: #ffffff;
+            transform: scale(1.03);
+            transition: all 0.4s ease;
+        }
+
+        /* Мягкое мерцание неактивных кнопок при наведении на белом фоне */
+        html[style*="--novel-bg: #ffffff"] .btn-episode:not(.active):hover,
+        html[style*="--novel-bg: rgb(255, 255, 255)"] .btn-episode:not(.active):hover {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+
+
+    </style>
+</head>
+<body>
+
+    <!-- СТАРТОВЫЙ ЭКРАН -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <h2>Мультимедийный роман</h2>
+        <h1>Зеркало – Альбинос</h1>
+        <div class="author">Павел Шевцов</div>
+        <button id="btnEnter" class="btn-enter">Начать сначала →</button>
+        <!-- Кнопка продолжения (по умолчанию скрыта, включится через JS, если есть сохранение) -->
+        <button id="btnContinue" class="btn-enter hidden" style="background-color: #1a1a1a; border: 1px solid #444; margin-top: -25px;">Продолжить погружение →</button>
+
+        <div class="bottom-nav">
+    <a href="author.html" class="btn-secondary">Об авторе</a>
+    <a href="schema.html" class="btn-secondary">Схема романа</a>
+</div>
+
+    </div>
+
+    <!-- ОСНОВНОЙ ИНТЕРФЕЙС РОМАНА -->
+    <div id="novelInterface" class="novel-interface">
+        
+        <aside class="novel-sidebar">
+            <h3 class="sidebar-title">Структура Романа</h3>
+            <div class="chapters-list" id="chaptersList"></div>
+            <button id="btnBackToMenu" class="btn-back">← Меню</button>
+        </aside>
+
+        <main class="novel-content">
+            <header class="content-header">
+                <h1 id="chapterTitle" class="chapter-main-title">Загрузка...</h1>
+                <!-- Сюда JS выведет кнопки Эпизодов (1 - 5 или меньше, если это Интерлюдия/Кода) -->
+                <div class="episodes-bar" id="episodesBar"></div>
+            </header>
+
+            <div class="display-viewport">
+                <div class="scene-container" id="sceneViewport">
+                    <!-- Сюда динамически рендерится контент выбранного Эпизода -->
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Оверлей для режимов созерцания и макро-рассмотрения -->
+    <div id="contemplationOverlay" class="contemplation-overlay">
+        <div class="contemplation-stage">
+            <img id="contemplationImg" class="contemplation-img" src="" alt="Созерцание">
+        </div>
+        <div id="contemplationCaption" class="contemplation-caption"></div>
+    </div>
+
+
+</body>
+</html>
