@@ -30,7 +30,7 @@ function generateTrueNovelStructure() {
     };
 
     const storiesData = {
-        1: { title: "Рассказ 1", file: "texts/stories/story1.txt" },
+        1: { title: "Рассказ 1", file: "story1.txt" },
         2: { title: "Рассказ 2", file: "texts/stories/story2.txt" },
         3: { title: "Рассказ 3", file: "texts/stories/story3.txt" },
         4: { title: "Рассказ 4", file: "texts/stories/story4.txt" },
@@ -42,7 +42,7 @@ function generateTrueNovelStructure() {
 
     const specialTexts = {
         "Поэма": { title: "Поэма (Психолого-мистический хоррор/триллер)", file: "texts/poems/novel_poem.txt" },
-        "Повесть": { title: "Повесть (Центральный узел усложнения)", file: "texts/stories/novel_novella.txt" }
+        "Повесть": { title: "Повесть (Центральный узел усложнения)", file: "novel_novella.txt" }
     };
 
     let globalTrack = 1;
