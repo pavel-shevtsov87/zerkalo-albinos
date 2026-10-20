@@ -18,7 +18,7 @@ function generateTrueNovelStructure() {
     // Здесь указаны только пути к ним для автоматической подгрузки.
     
     const poemsData = {
-        1: { title: "Стихотворение 1", file: "texts/poems/poem1.txt" },
+        1: { title: "Стихотворение 1", file: "main/poem1.txt" },
         2: { title: "Стихотворение 2", file: "texts/poems/poem2.txt" },
         3: { title: "Стихотворение 3", file: "texts/poems/poem3.txt" },
         4: { title: "Стихотворение 4", file: "texts/poems/poem4.txt" },
@@ -30,7 +30,7 @@ function generateTrueNovelStructure() {
     };
 
     const storiesData = {
-        1: { title: "Рассказ 1", file: "story1.txt" },
+        1: { title: "Рассказ 1", file: "main/story1.txt" },
         2: { title: "Рассказ 2", file: "texts/stories/story2.txt" },
         3: { title: "Рассказ 3", file: "texts/stories/story3.txt" },
         4: { title: "Рассказ 4", file: "texts/stories/story4.txt" },
@@ -58,9 +58,9 @@ function generateTrueNovelStructure() {
         episodes.push({
             name: "Эпизод 1",
             scenes: [
-                { type: "drawing", id: globalDrawing, src: `drawings/drawing${globalDrawing}.jpg`, title: drawingsTitles[globalDrawing] || `Рисунок ${globalDrawing}` },
-                { type: "track", id: globalTrack, file: `audio/track${globalTrack}.mp3`, title: `Трек ${globalTrack}`, genre: "Арт-рок" },
-                { type: "track", id: globalTrack + 1, file: `audio/track${globalTrack + 1}.mp3`, title: `Трек ${globalTrack + 1}`, genre: "Прог-рок" }
+                { type: "drawing", id: globalDrawing, src: `main/drawing${globalDrawing}.jpg`, title: drawingsTitles[globalDrawing] || `Рисунок ${globalDrawing}` },
+                { type: "track", id: globalTrack, file: `main/track${globalTrack}.mp3`, title: `Трек ${globalTrack}`, genre: "Арт-рок" },
+                { type: "track", id: globalTrack + 1, file: `main/track${globalTrack + 1}.mp3`, title: `Трек ${globalTrack + 1}`, genre: "Прог-рок" }
             ]
         });
         globalDrawing++;
@@ -99,7 +99,7 @@ function generateTrueNovelStructure() {
         if (isPeakChapter) {
             episodes.push({
                 name: "Эпизод 4",
-                scenes: [{ type: "story", id: "novel_novella", title: specialTexts["Повесть"].title, text: specialTexts["Повесть"].text, isPeak: true }]
+                scenes: [{ type: "story", id: "novel_novella", title: specialTexts["Повесть"].title, file: specialTexts["Повесть"].file, isPeak: true }]
             });
         } else {
             const sData = storiesData[globalStory] || { title: `Рассказ ${globalStory}`, text: "Текст..." };
