@@ -194,44 +194,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-       // Асинхронная загрузка текстов из внешних файлов .txt
     function renderText(scene, styleType) {
         const div = document.createElement('div');
         div.className = 'text-block';
         const layoutClass = styleType === 'poem' ? 'poetry-layout' : 'prose-layout';
-        
-        // Создаем каркас с заголовком и индикатором загрузки
-        div.innerHTML = `
-            <h3 class="text-title">${scene.title}</h3>
-            <div class="${layoutClass}" id="async-text-${scene.id}">Загрузка текста из матрицы...</div>
-        `;
+        div.innerHTML = `<h3 class="text-title">${scene.title}</h3><div class="${layoutClass}">${scene.text}</div>`;
         sceneViewport.appendChild(div);
-
-        // Обращаемся к внешнему файлу .txt
-        fetch(scene.file)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Файл не найден: ${scene.file}`);
-                }
-                return response.text();
-            })
-            .then(textContent => {
-                // Текст успешно прочитан, вставляем его в документ
-                const textContainer = document.getElementById(`async-text-${scene.id}`);
-                if (textContainer) {
-                    textContainer.innerText = textContent;
-                }
-            })
-            .catch(error => {
-                // Если файла еще нет в папке, выводим атмосферную заглушку
-                console.warn(error.message);
-                const textContainer = document.getElementById(`async-text-${scene.id}`);
-                if (textContainer) {
-                    textContainer.innerHTML = `<span style="opacity:0.4; font-style:italic;">Текстовый узел пуст. Файл еще не загружен в систему...</span>`;
-                }
-            });
     }
-
 // app.js — Часть 3: Режимы созерцания, макро-рассмотрения и системные утилиты
 
     let isZoomed = false; 
