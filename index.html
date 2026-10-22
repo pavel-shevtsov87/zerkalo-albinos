@@ -531,7 +531,142 @@
             background-color: rgba(0, 0, 0, 0.03);
         }
 
+        /* --- СИСТЕМА ЗАКЛАДОК ДЛЯ АБЗАЦЕВ --- */
+        
+        /* Каждый абзац становится позиционируемым контейнером */
+        .prose-paragraph {
+            position: relative;
+            margin-bottom: 1.5em;
+            padding-right: 30px; /* Место для значка справа */
+            transition: background-color 0.5s ease;
+        }
 
+        /* Стиль значка закладки */
+        .paragraph-bookmark-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            opacity: 0; /* Прячем значок по умолчанию */
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            user-select: none;
+        }
+
+        /* Показываем значок при наведении на абзац (на ПК) */
+        .prose-paragraph:hover .paragraph-bookmark-btn {
+            opacity: 0.4;
+        }
+
+        .paragraph-bookmark-btn:hover {
+            opacity: 1 !important;
+            transform: scale(1.2);
+        }
+
+        /* Стиль для абзаца, на котором СЕЙЧАС стоит активная закладка */
+        .prose-paragraph.bookmarked-active {
+            border-right: 2px solid var(--text-color);
+            background-color: var(--card-bg);
+        }
+
+        .prose-paragraph.bookmarked-active .paragraph-bookmark-btn {
+            opacity: 1;
+            color: #ff3b30; /* Выделяем сохраненную закладку (можно оставить цвет текста `var(--text-color)`) */
+        }
+
+        /* Анимация вспышки при автоматической прокрутке к закладке */
+        .paragraph-flash {
+            animation: flashHighlight 1.5s ease-out;
+        }
+
+        @keyframes flashHighlight {
+            0% { background-color: rgba(255, 255, 255, 0.25); }
+            100% { background-color: transparent; }
+        }
+
+        /* Адаптация для мобильных: на смартфонах значки видны всегда, но слегка прозрачны */
+        @media screen and (max-width: 768px) {
+            .paragraph-bookmark-btn {
+                opacity: 0.25;
+            }
+        }
+
+/* --- АДАПТАЦИЯ ИНТЕРФЕЙСА ДЛЯ СМАРТФОНОВ (Экран до 768px) --- */
+@media (max-width: 768px) {
+    #novelInterface {
+        /* Сворачиваем сетку в одну вертикальную колонку */
+        grid-template-columns: 100% !important; 
+        grid-template-rows: auto auto 1fr;
+        height: 100vh;
+    }
+
+    /* Прячем десктопный сайдбар с главами (для мобильных его лучше делать всплывающим меню) */
+    .sidebar {
+        display: none !important; 
+    }
+
+    /* Мобильные кнопки эпизодов делаем крупнее под нажатие пальцем */
+    .btn-episode {
+        padding: 14px 18px;
+        font-size: 1.05rem;
+        min-height: 48px; 
+    }
+
+    /* Рисунки подстраиваем под ширину мобильного экрана */
+    .drawing-block {
+        width: 100%;
+        max-width: 100%;
+        margin: 16px auto;
+        padding: 0 10px;
+    }
+
+    .drawing-block img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+
+    /* Мобильный плеер растягиваем во всю ширину */
+    .audio-track-item {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 16px;
+    }
+
+    .audio-player {
+        width: 100%;
+    }
+
+    /* Оптимизация режима созерцания рисунков для тач-экранов */
+    #contemplationOverlay.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto; 
+    }
+
+    /* На смартфонах при зуме просто масштабируем картинку, пользователь рассмотрит детали свайпом */
+    #contemplationOverlay.zoomed img {
+        transform: scale(2) !important; 
+        transition: transform 0.3s ease;
+    }
+}
+
+/* --- АДАПТАЦИЯ ДЛЯ ПЛАНШЕТОВ (Экран от 769px до 1024px) --- */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #novelInterface {
+        /* Сужаем сайдбар на планшетах, отдавая больше места контенту */
+        grid-template-columns: 200px 1fr !important; 
+    }
+    
+    .text-block {
+        padding: 30px 24px;
+    }
+}
 
     </style>
 </head>
@@ -585,6 +720,26 @@
         </div>
         <div id="contemplationCaption" class="contemplation-caption"></div>
     </div>
+
+/* ==========================================================================
+   АДАПТИВНАЯ ВЕРСТКА ДЛЯ СМАРТФОНОВ И ПЛАНШЕТОВ ("Зеркало-Альбинос")
+   ========================================================================== */
+
+/* Ограничение ширины строки прозы для удобного чтения на любых экранах */
+.text-block {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 680px;      
+    margin: 0 auto;        
+    padding: 24px 20px;    
+}
+
+.prose-layout p {
+    font-size: 1.2rem;    
+    line-height: 1.65;     
+    margin-bottom: 1.5em;  
+    letter-spacing: 0.01em;
+}
 
 
 </body>
