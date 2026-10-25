@@ -508,6 +508,56 @@
                 max-width: 280px;
                 gap: 10px;
             }
+
+
+/* =========================================================================
+   ОПТИМИЗАЦИЯ КНОПОК ЭПИЗОДОВ ДЛЯ УВЕЛИЧЕНИЯ ЗОНЫ ЧТЕНИЯ
+   ========================================================================= */
+@media screen and (max-width: 768px) {
+    /* Делаем контейнер кнопок эпизодов более компактным по высоте */
+    #episodesBar {
+        display: flex;
+        flex-wrap: nowrap; /* Выстраиваем в одну линию */
+        overflow-x: auto;  /* Разрешаем горизонтальную прокрутку пальцем, если не влезают */
+        gap: 6px;
+        padding: 8px 4px;
+        margin-bottom: 10px;
+        scrollbar-width: none; /* Прячем системный скроллбар в Firefox */
+    }
+
+    #episodesBar::-webkit-scrollbar {
+        display: none; /* Прячем системный скроллбар в Chrome/Safari */
+    }
+
+    /* Экстремально ужимаем сами кнопки эпизодов */
+    .btn-episode {
+        flex: 0 0 auto; /* Запрещаем кнопкам сжиматься в кашу */
+        font-size: 0.75rem !important; /* Уменьшаем шрифт */
+        padding: 6px 12px !important;  /* Срезаем внутренние огромные отступы */
+        margin: 0 !important;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+        white-space: nowrap; /* Текст «ЭПИЗОД Х» строго в одну строчку */
+    }
+    
+    /* Делаем viewport отображения контента шире, ужимая внешние отступы */
+    .display-viewport {
+        padding: 10px 14px !important;
+    }
+
+    /* Слегка адаптируем заголовки, чтобы они тоже не съедали экран */
+    .text-title, h3 {
+        font-size: 1.15rem !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* Оптимизируем межстрочный интервал прозы и стихов для комфортного чтения с телефона */
+    .poetry-layout, .prose-layout {
+        font-size: 0.9rem !important;
+        line-height: 1.45 !important;
+    }
+}
+
         }
 
 
@@ -668,6 +718,389 @@
     }
 }
 
+
+/* Minimalist Custom Audio Player styled for Net-Art */
+.custom-audio-track {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 680px;
+    margin: 20px auto;
+    padding: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.custom-audio-track .track-meta {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    color: var(--text-color);
+    margin-bottom: 5px;
+    font-family: monospace;
+}
+
+.custom-audio-track .track-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+/* Контейнер элементов управления */
+.custom-player-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+/* Кнопка Play/Pause */
+.player-playback-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.player-playback-btn:hover {
+    background: var(--text-color);
+    color: var(--novel-bg); /* Инверсия цвета при наведении */
+}
+
+/* Область трека (серая тонкая линия) */
+.player-progress-area {
+    flex-grow: 1;
+    height: 2px;
+    background: var(--border-color);
+    cursor: pointer;
+    position: relative;
+    padding: 4px 0; /* Увеличиваем зону клика для удобства */
+    background-clip: content-box;
+}
+
+/* Заполненная полоса прогресса (активная нить звука) */
+.player-progress-bar {
+    height: 2px;
+    width: 0%;
+    background: var(--text-color);
+    position: absolute;
+    top: 4px;
+    left: 0;
+    transition: width 0.1s linear;
+}
+
+/* Цифровой дисплей времени */
+.player-time-display {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    min-width: 35px;
+    text-align: right;
+    opacity: 0.8;
+}
+
+/* Стилизация специальной кнопки Схемы романа в Сайдбаре */
+.schema-matrix-btn {
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    border-left: 3px double transparent;
+}
+
+.schema-matrix-btn:hover {
+    border-left: 3px double var(--text-color);
+    background: var(--card-bg);
+}
+
+
+/* Фиксированная всплывающая панель сквозного плеера */
+.global-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    background: var(--novel-bg);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.3s;
+}
+
+.global-player.hidden {
+    transform: translateY(100%); /* Плеер изящно уезжает вниз, если ничего не играет */
+}
+
+.global-player-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+/* Блок Компаса / Метаданных */
+.global-track-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 250px;
+}
+
+.player-location-tag {
+    font-family: monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.5;
+    color: var(--text-color);
+    margin-bottom: 4px;
+}
+
+.player-track-title {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Элементы управления звуком */
+.global-player-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-grow: 1;
+}
+
+.global-playback-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.global-playback-btn:hover {
+    background: var(--text-color);
+    color: var(--novel-bg);
+}
+
+.global-progress-area {
+    flex-grow: 1;
+    height: 2px;
+    background: var(--border-color);
+    cursor: pointer;
+    position: relative;
+    padding: 6px 0;
+    background-clip: content-box;
+}
+
+.global-progress-bar {
+    height: 2px;
+    width: 0%;
+    background: var(--text-color);
+    position: absolute;
+    top: 6px;
+    left: 0;
+    transition: width 0.1s linear;
+}
+
+.global-time-display {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Стилизация пусковой кнопки на страницах Эпизодов */
+.track-launcher-block {
+    width: 100%;
+    max-width: 680px;
+    margin: 20px auto;
+    padding: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+.btn-launch-track {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: 15px;
+    text-align: left;
+}
+
+.btn-launch-track:hover, .btn-launch-track.active-playing {
+    background: var(--text-color);
+    color: var(--novel-bg);
+}
+
+
+/* Контейнер громкости */
+.global-volume-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 110px;
+}
+
+.volume-icon {
+    font-size: 0.9rem;
+    opacity: 0.6;
+    color: var(--text-color);
+}
+
+/* Стилизация ползунка-минималиста */
+.global-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 2px;
+    background: var(--border-color);
+    outline: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+/* Кастомизация кругляшка-бегунка для WebKit (Chrome, Safari, Edge) */
+.global-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 8px;
+    height: 8px;
+    background: var(--text-color);
+    border-radius: 0%; /* Делаем его квадратным под стиль графики */
+    transition: transform 0.1s ease;
+}
+
+.global-volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
+}
+
+/* Кастомизация кругляшка-бегунка для Firefox */
+.global-volume-slider::-moz-range-thumb {
+    width: 8px;
+    height: 8px;
+    background: var(--text-color);
+    border: none;
+    border-radius: 0%; /* Квадратный бегунок */
+    transition: transform 0.1s ease;
+    cursor: pointer;
+}
+
+.global-volume-slider::-moz-range-thumb:hover {
+    transform: scale(1.3);
+}
+
+
+
+/* =========================================================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ ДЛЯ СКВОЗНОГО ПЛЕЕРА (ЭКРАНЫ СМАРТФОНОВ)
+   ========================================================================= */
+@media screen and (max-width: 768px) {
+    /* Переводим главный контейнер плеера в вертикальный стек */
+    .global-player-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 16px;
+    }
+
+    /* Блок метаданных (Компас) центрируем и делаем компактнее */
+    .global-track-info {
+        min-width: unset;
+        text-align: center;
+        width: 100%;
+    }
+
+    .player-location-tag {
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        margin-bottom: 2px;
+    }
+
+    .player-track-title {
+        font-size: 0.95rem;
+    }
+
+    /* Блок управления звуком: кнопка Play и прогресс-бар */
+    .global-player-controls {
+        width: 100%;
+        gap: 12px;
+        justify-content: space-between;
+    }
+
+    .global-playback-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .global-progress-area {
+        padding: 8px 0; /* Увеличиваем сенсорную зону для удобства нажатия пальцем */
+    }
+
+    .global-time-display {
+        font-size: 0.8rem;
+        min-width: 32px;
+        flex-shrink: 0;
+    }
+
+    /* Выносим ползунок громкости на отдельную строчку или прячем/ужимаем */
+    /* Самое красивое решение для смартфона — сделать его компактным справа в панели */
+    .global-volume-container {
+        min-width: unset;
+        gap: 4px;
+    }
+
+    .global-volume-slider {
+        width: 45px; /* Уменьшаем длину ползунка, чтобы он не вытеснял линию трека */
+    }
+
+    .volume-icon {
+        font-size: 0.8rem;
+    }
+}
+
+/* Дополнительная микро-коррекция для экстремально узких экранов (вроде 320px) */
+@media screen and (max-width: 360px) {
+    .global-player-inner {
+        gap: 8px;
+        padding: 10px 12px;
+    }
+    
+    .global-volume-slider {
+        width: 35px; /* Еще сильнее ужимаем громкость, спасая пространство под прогресс-бар */
+    }
+}
+
+
+
     </style>
 </head>
 <body>
@@ -740,6 +1173,37 @@
     margin-bottom: 1.5em;  
     letter-spacing: 0.01em;
 }
+
+
+<!-- Глобальный сквозной плеер "Зеркала-Альбиноса" с регулятором громкости -->
+<div id="globalFloatingPlayer" class="global-player hidden">
+    <div class="global-player-inner">
+        <!-- Блок информации (Компас) -->
+        <div class="global-track-info">
+            <span id="globalTrackLocation" class="player-location-tag">Часть I • Глава I</span>
+            <div id="globalTrackName" class="player-track-title">Загрузка трека...</div>
+        </div>
+        
+        <!-- Блок управления -->
+        <div class="global-player-controls">
+            <button id="globalPlayBtn" class="global-playback-btn">▶</button>
+            <div id="globalProgressArea" class="global-progress-area">
+                <div id="globalProgressBar" class="global-progress-bar"></div>
+            </div>
+            <span id="globalTimeDisplay" class="global-time-display">0:00</span>
+            
+            <!-- ВОТ ЭТОТ ПРОПУЩЕННЫЙ БЛОК ГРОМКОСТИ: -->
+            <div class="global-volume-container">
+                <span class="volume-icon">🔊</span>
+                <input type="range" id="globalVolumeSlider" class="global-volume-slider" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Единый аудио-движок сайта -->
+<audio id="globalAudioEngine"></audio>
+
 
 
 </body>
