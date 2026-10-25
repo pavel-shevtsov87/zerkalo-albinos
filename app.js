@@ -84,17 +84,40 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
-    function buildSidebar() {
-        chaptersList.innerHTML = '';
-        window.bookStructure.forEach((section, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'btn-chapter';
-            btn.id = `sidebar-sec-${index}`;
-            btn.innerText = section.displayName;
-            btn.addEventListener('click', () => { loadSection(index, 0); });
-            chaptersList.appendChild(btn);
-        });
-    }
+   // Добавьте этот код в самый конец функции buildSidebar() прямо перед закрывающей фигурной скобкой }
+function buildSidebar() {
+    chaptersList.innerHTML = '';
+    window.bookStructure.forEach((section, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-chapter';
+        btn.id = `sidebar-sec-${index}`;
+        btn.innerText = section.displayName;
+        btn.addEventListener('click', () => { loadSection(index, 0); });
+        chaptersList.appendChild(btn);
+    });
+
+    // --- НОВАЯ КНОПКА ВОЗВРАТА К СХЕМЕ ---
+    const btnMatrixSchema = document.createElement('button');
+    btnMatrixSchema.className = 'btn-chapter schema-matrix-btn';
+    btnMatrixSchema.innerHTML = '⚙️ Схема романа'; // Можно использовать эзотерический символ вроде ☵ или 🎛️
+    btnMatrixSchema.style.marginTop = 'auto'; // Вытолкнет кнопку вниз панели
+    btnMatrixSchema.style.borderTop = '1px solid var(--border-color)';
+    
+    btnMatrixSchema.addEventListener('click', () => {
+        stopAllAudio();
+        // Если схема романа у вас открывается по вызову функции или смене экрана:
+        // Вариант А: если схема — это отдельный экранwelcomeScreen, где вы нажимали кнопку:
+        novelInterface.style.display = 'none';
+        welcomeScreen.classList.remove('hidden');
+        welcomeScreen.style.opacity = '1';
+        
+        // Автоматически эмулируем клик по кнопке "Схема романа" на главном экране, если она там есть:
+        const mainSchemaBtn = document.querySelector('button[id*="Schema"], .btn-schema, a[href*="schema"]');
+        if (mainSchemaBtn) mainSchemaBtn.click();
+    });
+    chaptersList.appendChild(btnMatrixSchema);
+}
+
 // app.js — Часть 2: Управление главами, эпизодами и автопереходом плеера
 
     function loadSection(index, targetEpisodeIndex = 0) {
@@ -126,72 +149,201 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function loadEpisode(epIndex) {
-        stopAllAudio();
-        currentEpisodeIndex = epIndex;
-        
-        const section = window.bookStructure[currentSectionIndex];
-        if (!section || !section.episodes[epIndex]) return;
-        
-        const episode = section.episodes[epIndex];
+// =========================================================================
+// ЧАСТЬ 2 (ПРОДОЛЖЕНИЕ): ИСПРАВЛЕННЫЙ БЛОК УПРАВЛЕНИЯ СКВОЗНЫМ АУДИОПЛЕЕРОМ
+// =========================================================================
 
-        document.querySelectorAll('.btn-episode').forEach(b => b.classList.remove('active'));
-        const activeEpBtn = document.getElementById('btn-ep-' + epIndex);
-        if (activeEpBtn) activeEpBtn.classList.add('active');
+   function loadEpisode(epIndex) {
+    // СТОП-СИГНАЛ УДАЛЕН: Сквозной плеер продолжает играть при смене вкладок.
+    currentEpisodeIndex = epIndex;
+    
+    const section = window.bookStructure[currentSectionIndex];
+    if (!section || !section.episodes[epIndex]) return;
+    
+    const episode = section.episodes[epIndex];
 
-        sceneViewport.innerHTML = '';
+    document.querySelectorAll('.btn-episode').forEach(b => b.classList.remove('active'));
+    const activeEpBtn = document.getElementById('btn-ep-' + epIndex);
+    if (activeEpBtn) activeEpBtn.classList.add('active');
 
-        episode.scenes.forEach(scene => {
-            if (scene.type === 'drawing') renderDrawing(scene);
-            else if (scene.type === 'track') renderTrack(scene);
-            else if (scene.type === 'poem') renderText(scene, 'poem');
-            else if (scene.type === 'story') renderText(scene, 'story');
+    sceneViewport.innerHTML = '';
+
+    episode.scenes.forEach(scene => {
+        if (scene.type === 'drawing') renderDrawing(scene);
+        else if (scene.type === 'track') renderTrack(scene);
+        else if (scene.type === 'poem') renderText(scene, 'poem');
+        else if (scene.type === 'story') renderText(scene, 'story');
+    });
+
+    saveProgress(currentSectionIndex, currentEpisodeIndex);
+    document.querySelector('.display-viewport').scrollTop = 0;
+}
+
+function renderDrawing(scene) {
+    const div = document.createElement('div');
+    div.className = 'drawing-block';
+    div.innerHTML = `
+        <div class="image-frame" id="frame-${scene.id}">
+            <img src="${scene.src}" alt="${scene.title}" id="img-${scene.id}">
+        </div>
+        <div class="drawing-caption">${scene.title}</div>
+    `;
+    sceneViewport.appendChild(div);
+
+    const imgEl = document.getElementById(`img-${scene.id}`);
+    imgEl.onerror = function() {
+        this.src = "https://picsum.photos"; 
+        this.onerror = null;
+    };
+
+    const frameEl = document.getElementById(`frame-${scene.id}`);
+    frameEl.addEventListener('click', () => { openContemplation(imgEl.src, scene.title); });
+}
+
+function renderTrack(scene) {
+    const div = document.createElement('div');
+    div.className = 'track-launcher-block';
+    
+    const currentSection = window.bookStructure[currentSectionIndex];
+    const currentEpisode = currentSection.episodes[currentEpisodeIndex];
+    const locationString = `${currentSection.displayName} • ${currentEpisode.name}`;
+
+    const globalAudio = document.getElementById('globalAudioEngine');
+    const isThisPlaying = (globalAudio.src && globalAudio.src.includes(scene.file) && !globalAudio.paused);
+
+    div.innerHTML = `
+        <div class="track-meta">${scene.genre} • Композиция №${scene.id}</div>
+        <div class="track-name">${scene.title}</div>
+        <button class="btn-launch-track ${isThisPlaying ? 'active-playing' : ''}" id="launch-${scene.id}">
+            ${isThisPlaying ? '‖ Пауза' : '▶ Слушать трек в сквозном плеере'}
+        </button>
+    `;
+    sceneViewport.appendChild(div);
+
+    const launchBtn = document.getElementById(`launch-${scene.id}`);
+    launchBtn.addEventListener('click', () => {
+        initGlobalTrack(scene.file, scene.title, locationString, launchBtn);
+    });
+}
+
+function initGlobalTrack(fileUrl, title, location, triggerBtn) {
+    const audio = document.getElementById('globalAudioEngine');
+    const playerPanel = document.getElementById('globalFloatingPlayer');
+    const playBtn = document.getElementById('globalPlayBtn');
+    const trackName = document.getElementById('globalTrackName');
+    const trackLocation = document.getElementById('globalTrackLocation');
+    const progressBar = document.getElementById('globalProgressBar');
+    const progressArea = document.getElementById('globalProgressArea');
+    const timeDisplay = document.getElementById('globalTimeDisplay');
+    const volumeSlider = document.getElementById('globalVolumeSlider');
+
+    // Если кликнули по тому же треку, который уже играет/загружен
+    if (audio.src && audio.src.includes(fileUrl)) {
+        if (audio.paused) {
+            audio.play();
+            playBtn.innerText = '‖';
+            triggerBtn.innerText = '‖ Пауза';
+            triggerBtn.classList.add('active-playing');
+        } else {
+            audio.pause();
+            playBtn.innerText = '▶';
+            triggerBtn.innerText = '▶ Слушать трек в сквозном плеере';
+            triggerBtn.classList.remove('active-playing');
+        }
+        return;
+    }
+
+    // Сброс визуального состояния прошлых кнопок на текущей странице
+    document.querySelectorAll('.btn-launch-track').forEach(btn => {
+        btn.innerText = '▶ Слушать трек в сквозном плеере';
+        btn.classList.remove('active-playing');
+    });
+
+    // Загрузка нового трека
+    audio.src = fileUrl;
+    trackName.innerText = title;
+    trackLocation.innerText = location;
+    
+    playerPanel.classList.remove('hidden'); 
+    
+    // Изначальная громкость на 50%, если слайдер не трогали
+    audio.volume = volumeSlider.value; 
+    
+    audio.play();
+    playBtn.innerText = '‖';
+    triggerBtn.innerText = '‖ Пауза';
+    triggerBtn.classList.add('active-playing');
+
+    // Инициализация системных событий управления ползунками (навешивается строго ОДИН раз)
+    if (!audio.dataset.initialized) {
+        audio.dataset.initialized = 'true';
+
+        audio.addEventListener('timeupdate', () => {
+            const percentage = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = `${percentage}%`;
+            
+            const mins = Math.floor(audio.currentTime / 60);
+            const secs = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+            timeDisplay.innerText = `${mins}:${secs}`;
         });
 
-        saveProgress(currentSectionIndex, currentEpisodeIndex);
-        document.querySelector('.display-viewport').scrollTop = 0;
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerText = '‖';
+                const activeBtn = document.querySelector('.btn-launch-track.active-playing'); 
+                if (activeBtn) activeBtn.innerText = '‖ Пауза';
+            } else {
+                audio.pause();
+                playBtn.innerText = '▶';
+                const activeBtn = document.querySelector('.btn-launch-track.active-playing');
+                if (activeBtn) activeBtn.innerText = '▶ Слушать трек в сквозном плеере';
+            }
+        });
+
+        progressArea.addEventListener('click', (e) => {
+            const width = progressArea.clientWidth;
+            const clickX = e.offsetX;
+            if (audio.duration) {
+                audio.currentTime = (clickX / width) * audio.duration;
+            }
+        });
+
+        volumeSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        audio.addEventListener('ended', () => {
+            playBtn.innerText = '▶';
+            progressBar.style.width = '0%';
+            timeDisplay.innerText = '0:00';
+            const activeBtn = document.querySelector('.btn-launch-track.active-playing');
+            if (activeBtn) {
+                activeBtn.innerText = '▶ Слушать трек в сквозном плеере';
+                activeBtn.classList.remove('active-playing');
+            }
+        });
     }
+}
 
-    function renderDrawing(scene) {
-        const div = document.createElement('div');
-        div.className = 'drawing-block';
-        div.innerHTML = `
-            <div class="image-frame" id="frame-${scene.id}">
-                <img src="${scene.src}" alt="${scene.title}" id="img-${scene.id}">
-            </div>
-            <div class="drawing-caption">${scene.title}</div>
-        `;
-        sceneViewport.appendChild(div);
-
-        const imgEl = document.getElementById(`img-${scene.id}`);
-        imgEl.onerror = function() {
-            this.src = "https://picsum.photos"; 
-            this.onerror = null;
-        };
-
-        const frameEl = document.getElementById(`frame-${scene.id}`);
-        frameEl.addEventListener('click', () => { openContemplation(imgEl.src, scene.title); });
+// ЕДИНАЯ ИСПРАВЛЕННАЯ СИСТЕМНАЯ ФУНКЦИЯ ОСТАНОВКИ АУДИО (вызывается при выходе в меню/схему)
+function stopAllAudio() {
+    const audio = document.getElementById('globalAudioEngine');
+    if (audio) {
+        audio.pause();
+        audio.src = ''; // Полностью освобождаем аудиопоток
     }
+    const playBtn = document.getElementById('globalPlayBtn');
+    if (playBtn) playBtn.innerText = '▶';
+    
+    // Сбрасываем интерактивные классы кнопок на страницах
+    document.querySelectorAll('.btn-launch-track').forEach(btn => {
+        btn.innerText = '▶ Слушать трек в сквозном плеере';
+        btn.classList.remove('active-playing');
+    });
+}
 
-    function renderTrack(scene) {
-        const div = document.createElement('div');
-        div.className = 'audio-track-item';
-        div.innerHTML = `
-            <div class="track-meta">${scene.genre} • Композиция №${scene.id}</div>
-            <div class="track-name">${scene.title}</div>
-            <audio controls class="audio-player" src="${scene.file}"></audio>
-        `;
-        sceneViewport.appendChild(div);
 
-        // Находим созданный плеер в разметке
-        const audioEl = div.querySelector('.audio-player');
-        
-        // Устанавливаем изначальную громкость ровно на 50% (значение от 0.0 до 1.0)
-        audioEl.volume = 0.5;
-
-        // Автоматический переход удален. По окончании трека музыка просто остановится,
-        // давая посетителю возможность побыть в тишине или самостоятельно перейти к следующему шагу.
-    }
 
 
     function renderText(scene, styleType) {
@@ -290,10 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function stopAllAudio() {
-        document.querySelectorAll('audio').forEach(audio => audio.pause());
-    }
-
+   
     // ИНИЦИАЛИЗАЦИЯ ДВИЖКА ПРИ СТАРТЕ СТРАНИЦЫ
     const hashLoaded = checkUrlHash();
     if (!hashLoaded) {
