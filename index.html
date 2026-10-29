@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мультимедийный роман "Зеркало-Альбинос"</title>
+    <title>Мультимедийная поэма "Зеркало-Альбинос"</title>
     <script src="data.js" defer></script>
     <script src="app.js" defer></script>
     <style>
@@ -519,10 +519,12 @@
         display: flex;
         flex-wrap: nowrap; /* Выстраиваем в одну линию */
         overflow-x: auto;  /* Разрешаем горизонтальную прокрутку пальцем, если не влезают */
+        justify-content: flex-start; /* ИСПРАВЛЕНИЕ: Жестко фиксируем начало скролла слева */
         gap: 6px;
-        padding: 8px 4px;
+        padding: 8px 14px; /* ИСПРАВЛЕНИЕ: Выравниваем отступ (14px) по ширине .display-viewport */
         margin-bottom: 10px;
         scrollbar-width: none; /* Прячем системный скроллбар в Firefox */
+        -webkit-overflow-scrolling: touch; /* Улучшаем плавность скролла на iOS Safari */
     }
 
     #episodesBar::-webkit-scrollbar {
@@ -557,6 +559,7 @@
         line-height: 1.45 !important;
     }
 }
+
 
         }
 
@@ -1107,7 +1110,7 @@
 
     <!-- СТАРТОВЫЙ ЭКРАН -->
     <div id="welcomeScreen" class="welcome-screen">
-        <h2>Мультимедийный роман</h2>
+        <h2>Мультимедийная поэма</h2>
         <h1>Зеркало – Альбинос</h1>
         <div class="author">Павел Шевцов</div>
         <button id="btnEnter" class="btn-enter">Начать сначала →</button>
@@ -1116,7 +1119,7 @@
 
         <div class="bottom-nav">
     <a href="author.html" class="btn-secondary">Об авторе</a>
-    <a href="schema.html" class="btn-secondary">Схема романа</a>
+    <a href="schema.html" class="btn-secondary">Схема поэмы</a>
 </div>
 
     </div>
@@ -1125,7 +1128,7 @@
     <div id="novelInterface" class="novel-interface">
         
         <aside class="novel-sidebar">
-            <h3 class="sidebar-title">Структура Романа</h3>
+            <h3 class="sidebar-title">Структура Поэмы</h3>
             <div class="chapters-list" id="chaptersList"></div>
             <button id="btnBackToMenu" class="btn-back">← Меню</button>
         </aside>
