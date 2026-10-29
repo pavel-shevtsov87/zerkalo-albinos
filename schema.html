@@ -43,7 +43,7 @@
 
 <div class="container">
     <header>
-        <h1>Схема романа</h1>
+        <h1>Схема поэмы</h1>
         <div class="subtitle">ЗЕРКАЛО-АЛЬБИНОС</div>
         <a href="index.html" class="btn-back">← На главную</a>
     </header>
@@ -122,13 +122,13 @@
                         } else if (scene.type === 'poem') {
                             // Если это пиковая глава — выводим "Поэма", иначе — порядковый номер Рассказа/Стиха по вашей схеме
                             if (scene.isPeak) {
-                                cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Поэма</div>`;
+                                cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Поэма 0</div>`;
                             } else {
                                 cellContent += `<div>Стихотворение ${scene.id}</div>`;
                             }
                         } else if (scene.type === 'story') {
     if (scene.isPeak) {
-        cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Повесть</div>`;
+        cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Поэма 00</div>`;
     } else {
         // Теперь нумерация рассказов идет строго последовательно, перешагивая пиковую Повесть.
         // Если индекс в базе больше 5 (так как Повесть заняла место 5-й главы), 
