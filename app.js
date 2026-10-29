@@ -99,7 +99,7 @@ function buildSidebar() {
     // --- НОВАЯ КНОПКА ВОЗВРАТА К СХЕМЕ ---
     const btnMatrixSchema = document.createElement('button');
     btnMatrixSchema.className = 'btn-chapter schema-matrix-btn';
-    btnMatrixSchema.innerHTML = '⚙️ Схема романа'; // Можно использовать эзотерический символ вроде ☵ или 🎛️
+    btnMatrixSchema.innerHTML = '⚙️ СХЕМА ПОЭМЫ'; // Можно использовать эзотерический символ вроде ☵ или 🎛️
     btnMatrixSchema.style.marginTop = 'auto'; // Вытолкнет кнопку вниз панели
     btnMatrixSchema.style.borderTop = '1px solid var(--border-color)';
     
@@ -215,7 +215,7 @@ function renderTrack(scene) {
         <div class="track-meta">${scene.genre} • Композиция №${scene.id}</div>
         <div class="track-name">${scene.title}</div>
         <button class="btn-launch-track ${isThisPlaying ? 'active-playing' : ''}" id="launch-${scene.id}">
-            ${isThisPlaying ? '‖ Пауза' : '▶ Слушать трек в сквозном плеере'}
+            ${isThisPlaying ? '‖ Пауза' : '▶ Слушать трек'}
         </button>
     `;
     sceneViewport.appendChild(div);
@@ -247,7 +247,7 @@ function initGlobalTrack(fileUrl, title, location, triggerBtn) {
         } else {
             audio.pause();
             playBtn.innerText = '▶';
-            triggerBtn.innerText = '▶ Слушать трек в сквозном плеере';
+            triggerBtn.innerText = '▶ Слушать трек';
             triggerBtn.classList.remove('active-playing');
         }
         return;
@@ -255,7 +255,7 @@ function initGlobalTrack(fileUrl, title, location, triggerBtn) {
 
     // Сброс визуального состояния прошлых кнопок на текущей странице
     document.querySelectorAll('.btn-launch-track').forEach(btn => {
-        btn.innerText = '▶ Слушать трек в сквозном плеере';
+        btn.innerText = '▶ Слушать трек';
         btn.classList.remove('active-playing');
     });
 
@@ -297,7 +297,7 @@ function initGlobalTrack(fileUrl, title, location, triggerBtn) {
                 audio.pause();
                 playBtn.innerText = '▶';
                 const activeBtn = document.querySelector('.btn-launch-track.active-playing');
-                if (activeBtn) activeBtn.innerText = '▶ Слушать трек в сквозном плеере';
+                if (activeBtn) activeBtn.innerText = '▶ Слушать трек';
             }
         });
 
@@ -319,7 +319,7 @@ function initGlobalTrack(fileUrl, title, location, triggerBtn) {
             timeDisplay.innerText = '0:00';
             const activeBtn = document.querySelector('.btn-launch-track.active-playing');
             if (activeBtn) {
-                activeBtn.innerText = '▶ Слушать трек в сквозном плеере';
+                activeBtn.innerText = '▶ Слушать трек';
                 activeBtn.classList.remove('active-playing');
             }
         });
@@ -338,7 +338,7 @@ function stopAllAudio() {
     
     // Сбрасываем интерактивные классы кнопок на страницах
     document.querySelectorAll('.btn-launch-track').forEach(btn => {
-        btn.innerText = '▶ Слушать трек в сквозном плеере';
+        btn.innerText = '▶ Слушать трек';
         btn.classList.remove('active-playing');
     });
 }
@@ -449,3 +449,4 @@ function stopAllAudio() {
         checkSavedProgress();
     }
 });
+
