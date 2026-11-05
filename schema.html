@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Архитектурная схема романа "Зеркало-Альбинос"</title>
-    <!-- Подключаем нашу общую базу данных романа -->
+    <title>Архитектурная схема поэмы "Зеркало-Альбинос"</title>
+    <!-- Подключаем нашу общую базу данных поэмы -->
     <script src="data.js"></script>
     <style>
         body { 
@@ -34,9 +34,126 @@
         
         .peak-scene { font-weight: bold; background-color: rgba(255, 255, 255, 0.15); padding: 4px; border: 1px dashed currentColor; }
         
-        /* Интерактивный клик по ячейкам-эпизодам */
-        .clickable-cell { cursor: pointer; transition: background-color 0.2s ease; }
-        .clickable-cell:hover { background-color: rgba(128, 128, 128, 0.25) !important; }
+      /* Интерактивный клик по ячейкам-эпизодам с адаптивной подсветкой */
+.clickable-cell { 
+    cursor: pointer; 
+    transition: filter 0.2s ease, box-shadow 0.2s ease; 
+}
+
+/* Вместо закрашивания серым цветом, мы деликатно подсвечиваем родной цвет ячейки */
+.clickable-cell:hover { 
+    filter: brightness(1.2) contrast(1.1);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+        /* ==========================================================================
+           НОВАЯ АДАПТИВНАЯ ВЕРСТКА ДЛЯ МОБИЛЬНЫХ ЭКРАНОВ (СМАРТФОНЫ И ПЛАНШЕТЫ)
+           ========================================================================== */
+        @media (max-width: 850px) {
+            body { padding: 20px 10px; }
+            
+            /* Отменяем табличные свойства, превращая структуру в flex-столбец */
+            table, tbody, tr, td { 
+                display: block !important; 
+                width: 100% !important; 
+                box-sizing: border-box; 
+                table-layout: auto !important;
+            }
+            
+            table { background-color: transparent; border: none; }
+            
+            /* Разделяем строки (Главы) аккуратным отступом */
+            tr { 
+                margin-bottom: 25px; 
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                border: 1px solid rgba(255, 255, 255, 0.05) !important;
+            }
+
+            /* Заголовки крупных частей (ЧАСТЬ I, II, III) */
+            .part-header {
+                margin-bottom: 15px;
+                border-radius: 6px;
+                font-size: 1.1rem;
+                padding: 12px;
+            }
+
+            /* Название главы становится верхней плашкой блока */
+            .chapter-cell { 
+                padding: 14px 10px !important; 
+                font-size: 1.1rem; 
+                background-color: rgba(0, 0, 0, 0.4) !important;
+                border: none !important;
+                border-bottom: 1px solid rgba(128, 128, 128, 0.2) !important;
+                color: inherit !important; /* Сохраняет авторскую инверсию цвета текста */
+            }
+
+            /* Ячейки Эпизодов превращаются в независимые карточки друг под другом */
+            .clickable-cell { 
+                border: none !important;
+                border-bottom: 1px solid rgba(128, 128, 128, 0.15) !important; 
+                padding: 16px 20px !important;
+                text-align: left;
+            }
+            
+            .clickable-cell:last-child { border-bottom: none !important; }
+
+            /* Выделяем заголовок эпизода */
+            .episode-title {
+                text-align: left;
+                background-color: rgba(128, 128, 128, 0.2);
+                display: inline-block;
+                padding: 3px 10px;
+                border-radius: 4px;
+                margin-bottom: 10px;
+            }
+
+            /* Очищаем обтекания для треков в Интерлюдиях */
+            .clickable-cell span[style*="float: right"] {
+                float: none !important;
+                display: block;
+                margin-top: 5px;
+            }
+        }
+
+/* Скрываем подгружаемые названия по умолчанию */
+.clickable-cell .hover-meta {
+    opacity: 0;
+    visibility: hidden;
+    font-style: italic;
+    font-weight: normal;
+    margin-left: 4px;
+    display: inline-block;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    
+    /* Делаем так, чтобы текст плавно проявлялся на той же строке */
+    max-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* При наведении мыши на ячейку — плавно проявляем и раздвигаем название */
+.clickable-cell:hover .hover-meta {
+    opacity: 0.8;
+    visibility: visible;
+    max-width: 300px; /* Ограничение длины строки, чтобы сетка не прыгала */
+}
+
+/* Адаптив для мобильных устройств: на смартфонах ховера нет, 
+   поэтому сделаем названия видимыми чуть бледнее сразу, чтобы не прятать контент */
+@media (max-width: 850px) {
+    .clickable-cell .hover-meta {
+        opacity: 0.6 !important;
+        visibility: visible !important;
+        max-width: none !important;
+        display: block; /* На мобилках перенесём на новую строку для красоты */
+        margin-left: 0;
+        font-size: 0.8rem;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -53,119 +170,173 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const table = document.getElementById('dynamicMatrixTable');
-        if (!window.bookStructure) return;
+document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById('dynamicMatrixTable');
+    if (!window.bookStructure) return;
 
-        let currentPart = 0;
+    let currentPart = 0;
 
-        window.bookStructure.forEach((section, secIndex) => {
-            // Вывод заголовков больших Частей
-            let needPartHeader = "";
-            if (secIndex === 0 && currentPart === 0) { needPartHeader = "ЧАСТЬ I"; currentPart = 1; }
-            if (secIndex === 4 && currentPart === 1) { needPartHeader = "ЧАСТЬ II"; currentPart = 2; }
-            if (secIndex === 8 && currentPart === 2) { needPartHeader = "ЧАСТЬ III"; currentPart = 3; }
+    window.bookStructure.forEach((section, secIndex) => {
+        // Вывод заголовков больших Частей
+        let needPartHeader = "";
+        if (secIndex === 0 && currentPart === 0) { needPartHeader = "ЧАСТЬ I"; currentPart = 1; }
+        if (secIndex === 4 && currentPart === 1) { needPartHeader = "ЧАСТЬ II"; currentPart = 2; }
+        if (secIndex === 8 && currentPart === 2) { needPartHeader = "ЧАСТЬ III"; currentPart = 3; }
 
-            if (needPartHeader) {
-                const pTr = document.createElement('tr');
-                pTr.innerHTML = `<td colspan="6" class="part-header">${needPartHeader}</td>`;
-                table.appendChild(pTr);
-            }
+        if (needPartHeader) {
+            const pTr = document.createElement('tr');
+            pTr.innerHTML = `<td colspan="6" class="part-header">${needPartHeader}</td>`;
+            table.appendChild(pTr);
+        }
 
-            const tr = document.createElement('tr');
+        const tr = document.createElement('tr');
 
-            // Применение авторского HEX-градиента
-            const bgColor = section.hexColor || "#000000";
-            tr.style.backgroundColor = bgColor;
-            
-            const textColor = section.brightness > 50 ? '#000000' : '#ffffff';
-            tr.style.color = textColor;
-
-            const shortName = section.displayName.replace(/Часть I+ • /, "");
-            let htmlContent = `<td class="chapter-cell">${shortName}</td>`;
-
-            // Обработка Интерлюдий и Коды
-            if (section.type === 'interlude' || section.type === 'coda') {
-                let leftCol = "";
-                let midCol = "";
-                let rightCol = "";
-
-                section.episodes[0].scenes.forEach(sc => {
-                    if (sc.type === 'drawing') leftCol = `<strong>рисунок ${sc.id}</strong>`;
-                    if (sc.type === 'poem') midCol = `<strong>Стихотворение ${sc.id}</strong>`;
-                    if (sc.type === 'track') rightCol = `<span style="float: right;"><strong>трек ${sc.id}</strong></span>`;
-                });
-
-                if (section.type === 'coda') {
-                    htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${leftCol}</td>`;
-                    htmlContent += `<td class="clickable-cell" data-sec="${secIndex}" data-ep="0">${midCol}</td>`;
-                    htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${rightCol}</td>`;
-                } else {
-                    htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${leftCol}</td>`;
-                    htmlContent += `<td colspan="3" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${rightCol}</td>`;
-                }
-            } else {
-                // Генерация 5 стандартных Эпизодов
-                section.episodes.forEach((episode, epIndex) => {
-                    let cellContent = `<td class="clickable-cell" data-sec="${secIndex}" data-ep="${epIndex}">`;
-                    cellContent += `<div class="episode-title">${episode.name}</div>`;
-
-                    episode.scenes.forEach((scene, scIndex) => {
-                        const isPeakTrack = (scene.type === 'track' && scene.id === 33);
-                        const peakClass = isPeakTrack ? ' class="peak-scene"' : '';
-
-                        if (scene.type === 'drawing') {
-                            cellContent += `<div${peakClass}>Узел 1: рисунок ${scene.id}</div>`;
-                        } else if (scene.type === 'track') {
-                            // Заменяем "Сцену" на "Узел"
-                            cellContent += `<div${peakClass}>Узел ${scIndex + 1}: трек ${scene.id}</div>`;
-                        } else if (scene.type === 'poem') {
-                            // Если это пиковая глава — выводим "Поэма", иначе — порядковый номер Рассказа/Стиха по вашей схеме
-                            if (scene.isPeak) {
-                                cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Поэма 0</div>`;
-                            } else {
-                                cellContent += `<div>Стихотворение ${scene.id}</div>`;
-                            }
-                        } else if (scene.type === 'story') {
-    if (scene.isPeak) {
-        cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Поэма 00</div>`;
-    } else {
-        // Теперь нумерация рассказов идет строго последовательно, перешагивая пиковую Повесть.
-        // Если индекс в базе больше 5 (так как Повесть заняла место 5-й главы), 
-        // отображаемый номер на схеме будет рассчитываться абсолютно точно по вашей таблице.
-        let displayStoryId = scene.id;
-        if (secIndex === 6) displayStoryId = 5; // Часть II • Глава III -> Рассказ 5
-        if (secIndex === 8) displayStoryId = 6; // Часть III • Глава I -> Рассказ 6
-        if (secIndex === 9) displayStoryId = 7; // Часть III • Глава II -> Рассказ 7
-        if (secIndex === 10) displayStoryId = 8; // Часть III • Глава III -> Рассказ 8
+        // Применение авторского HEX-градиента
+        const bgColor = section.hexColor || "#000000";
+        tr.style.backgroundColor = bgColor;
         
-        cellContent += `<div>Рассказ ${displayStoryId}</div>`;
-    }
-}
+        const textColor = section.brightness > 50 ? '#000000' : '#ffffff';
+        tr.style.color = textColor;
 
-                    });
+        const shortName = section.displayName.replace(/Часть I+ • /, "");
+        let htmlContent = `<td class="chapter-cell">${shortName}</td>`;
+        // Обработка Интерлюдий и Коды
+        if (section.type === 'interlude' || section.type === 'coda') {
+            let leftCol = "";
+            let midCol = "";
+            let rightCol = "";
 
-                    cellContent += `</td>`;
-                    htmlContent += cellContent;
-                });
+            section.episodes[0].scenes.forEach(sc => {
+                if (sc.type === 'drawing') leftCol = `<strong>рисунок ${sc.id}</strong>`;
+                if (sc.type === 'poem') midCol = `<strong>Стихотворение ${sc.id}</strong>`;
+                if (sc.type === 'track') rightCol = `<span style="float: right;"><strong>трек ${sc.id}</strong></span>`;
+            });
+
+            if (section.type === 'coda') {
+                htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${leftCol}</td>`;
+                htmlContent += `<td class="clickable-cell" data-sec="${secIndex}" data-ep="0">${midCol}</td>`;
+                htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${rightCol}</td>`;
+            } else {
+                htmlContent += `<td colspan="2" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${leftCol}</td>`;
+                htmlContent += `<td colspan="3" class="clickable-cell" data-sec="${secIndex}" data-ep="0">${rightCol}</td>`;
             }
+        } else {
+            // Генерация стандартных Эпизодов
+            section.episodes.forEach((episode, epIndex) => {
+                let cellContent = `<td class="clickable-cell" data-sec="${secIndex}" data-ep="${epIndex}">`;
+                cellContent += `<div class="episode-title">${episode.name}</div>`;
 
-            tr.innerHTML = htmlContent;
-            table.appendChild(tr);
-        });
+                episode.scenes.forEach((scene, scIndex) => {
+                    const isPeakTrack = (scene.type === 'track' && scene.id === 33);
+                    const peakClass = isPeakTrack ? ' class="peak-scene"' : '';
 
-        // Кросс-ссылки
-        table.addEventListener('click', (e) => {
-            const cell = e.target.closest('.clickable-cell');
-            if (cell) {
-                const sec = cell.getAttribute('data-sec');
-                const ep = cell.getAttribute('data-ep');
+                    if (scene.type === 'drawing') {
+                        cellContent += `<div${peakClass}>Узел ${scIndex + 1}: рисунок ${scene.id}</div>`;
+                    } else if (scene.type === 'track') {
+                        cellContent += `<div${peakClass}>Узел ${scIndex + 1}: трек ${scene.id}</div>`;
+                    } else if (scene.type === 'poem') {
+                        if (scene.isPeak) {
+                            cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Поэма 0</div>`;
+                        } else {
+                            cellContent += `<div>Стихотворение ${scene.id}</div>`;
+                        }
+                    } else if (scene.type === 'story') {
+                        if (scene.isPeak) {
+                            cellContent += `<div style="font-size:1.15rem; font-weight:bold; text-align:center; padding:5px 0;">Поэма 00</div>`;
+                        } else {
+                            let displayStoryId = scene.id;
+                            if (secIndex === 6) displayStoryId = 5; 
+                            if (secIndex === 8) displayStoryId = 6; 
+                            if (secIndex === 9) displayStoryId = 7; 
+                            if (secIndex === 10) displayStoryId = 8; 
+                            
+                            cellContent += `<div>Рассказ ${displayStoryId}</div>`;
+                        }
+                    }
+                });
+
+                cellContent += `</td>`;
+                htmlContent += cellContent;
+            });
+        }
+
+        tr.innerHTML = htmlContent;
+        table.appendChild(tr);
+    });
+
+    // Навешиваем ОДИН клик на всю таблицу
+    table.addEventListener('click', (e) => {
+        const cell = e.target.closest('.clickable-cell');
+        if (cell) {
+            const sec = cell.getAttribute('data-sec');
+            const ep = cell.getAttribute('data-ep');
+            if (sec !== null && ep !== null) {
                 window.location.href = `index.html#sec=${sec}&ep=${ep}`;
             }
-        });
+        }
     });
+});
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        if (!window.bookStructure) return;
+
+        const tracksMap = {};
+        const drawingsMap = {};
+
+        window.bookStructure.forEach(section => {
+            if (!section.episodes) return;
+            section.episodes.forEach(episode => {
+                if (!episode.scenes) return;
+                episode.scenes.forEach(scene => {
+                    if (scene.type === 'track') tracksMap[scene.id] = scene.title;
+                    else if (scene.type === 'drawing') drawingsMap[scene.id] = scene.title;
+                });
+            });
+        });
+
+        // Функция сканирует элементы и заменяет текст на HTML с тегом span
+        function injectHoverSpans(node) {
+            // Защита: не заходим в служебные теги
+            if (node.nodeName === 'SCRIPT' || node.nodeName === 'STYLE') return;
+
+            if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('clickable-cell')) {
+                let html = node.innerHTML;
+                let isChanged = false;
+
+                // Регулярное выражение для поиска треков
+                const trackRegex = /(трек\s*(?:№)?\s*(\d+))(?!<span)/gi;
+                html = html.replace(trackRegex, (match, fullWord, id) => {
+                    const trackId = parseInt(id, 10);
+                    if (tracksMap[trackId]) {
+                        isChanged = true;
+                        return `${fullWord} <span class="hover-meta">«${tracksMap[trackId]}»</span>`;
+                    }
+                    return match;
+                });
+
+                // Регулярное выражение для поиска рисунков
+                const drawingRegex = /(рисунок\s*(?:№)?\s*(\d+))(?!<span)/gi;
+                html = html.replace(drawingRegex, (match, fullWord, id) => {
+                    const drawingId = parseInt(id, 10);
+                    if (drawingsMap[drawingId]) {
+                        isChanged = true;
+                        return `${fullWord} <span class="hover-meta">«${drawingsMap[drawingId]}»</span>`;
+                    }
+                    return match;
+                });
+
+                if (isChanged) node.innerHTML = html;
+            } else {
+                for (let child of node.childNodes) {
+                    injectHoverSpans(child);
+                }
+            }
+        }
+        injectHoverSpans(document.body);
+    }, 150);
+});
+</script>
 
 </script>
 </body>
 </html>
-
