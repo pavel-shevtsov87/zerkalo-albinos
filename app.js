@@ -212,7 +212,7 @@ function renderTrack(scene) {
     const isThisPlaying = (globalAudio.src && globalAudio.src.includes(scene.file) && !globalAudio.paused);
 
     div.innerHTML = `
-        <div class="track-meta">${scene.genre} • Композиция №${scene.id}</div>
+        <div class="track-meta">${scene.genre} • Композиция №${scene.id} •</div>
         <div class="track-name">${scene.title}</div>
         <button class="btn-launch-track ${isThisPlaying ? 'active-playing' : ''}" id="launch-${scene.id}">
             ${isThisPlaying ? '‖ Пауза' : '▶ Слушать трек'}
@@ -448,5 +448,6 @@ function stopAllAudio() {
     if (!hashLoaded) {
         checkSavedProgress();
     }
+
 });
 
